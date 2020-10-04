@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
+use Mews\Purifier\Purifier;
 
 class EncryptionController extends Controller
 {
@@ -11,6 +12,7 @@ class EncryptionController extends Controller
     private $keysToEncrypt = ['last_name'];
     private $client;
     private $authentication;
+    private $purifier;
 
     public function __construct()
     {
@@ -26,14 +28,22 @@ class EncryptionController extends Controller
 
         foreach($userCreateData as $key => $item) {
 
+            $key = strip_tags(clean($key));
+
             if (in_array($key, $this->keysToEncrypt)) {
 
-                $dataToSend[$key] = Crypt::encrypt($item);
+                $dataToSend[$key] = Crypt::encrypt(strip_tags(clean($item)));
 
             } else {
 
                 if ($key != '_rev') {
-                    $dataToSend[$key] = $item;
+
+                    if (is_array($item)) {
+                        $dataToSend[$key] = $item;
+                    } else {
+                        $dataToSend[$key] = strip_tags(clean($item));
+                    }
+
                 }
 
             }
@@ -59,10 +69,19 @@ class EncryptionController extends Controller
         $dataToHandle = json_decode($response->getBody()->getContents());
 
         foreach($dataToHandle as $key => $item) {
+
+            $key = strip_tags(clean($key));
+
             if (in_array($key, $this->keysToEncrypt)) {
-                $dataToHandle->$key = Crypt::decrypt($item);
+                $dataToHandle->$key = Crypt::decrypt(strip_tags(clean($item)));
             } else {
-                $dataToHandle->$key = $item;
+
+                if (is_array($item)) {
+                    $dataToHandle->$key = $item;
+                } else {
+                    $dataToHandle->$key = strip_tags(clean($item));
+                }
+
             }
         }
 
