@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'mysql'),
+    'default' => env('DB_CONNECTION', 'couchdb'),
 
     /*
     |--------------------------------------------------------------------------
@@ -61,6 +61,18 @@ return [
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
+        ],
+
+        'couchdb' => [
+            'driver'   => 'couchdb',
+            'type'     => env('DB_CONNECTION_TYPE', 'socket'),
+            'host'     => env('DB_HOST', '127.0.0.1'),
+            'ip'       => env('DB_IP', null),
+            'port'     => env('DB_PORT', '5984'),
+            'dbname'   => env('DB_DATABASE', 'users_auth'),
+            'user'     => env('DB_USERNAME', null),
+            'password' => env('DB_PASSWORD', null),
+            'logging'  => env('DB_LOGGING', false),
         ],
 
         'pgsql' => [
