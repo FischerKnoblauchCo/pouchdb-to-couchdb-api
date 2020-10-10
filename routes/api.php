@@ -17,13 +17,15 @@ use Illuminate\Support\Facades\Route;
 Route::post('auth/login', 'App\Http\Controllers\EncryptionController@encryptUserCreation');
 
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+Route::middleware('jwt_validate')->group(function () {
+    Route::post('user/login', 'App\Http\Controllers\AuthController@login');
+    Route::get('user/token', 'App\Http\Controllers\AuthController@getToken');
+
+    Route::post('user/create', 'App\Http\Controllers\EncryptionController@encryptUserCreation');
+    Route::get('user/get', 'App\Http\Controllers\EncryptionController@getDocument');
 });
 
+//Route::middleware('jwt_validate')->get('/user', function (Request $request) {
+//    return $request->user();
+//});
 
-Route::post('user/login', 'App\Http\Controllers\AuthController@login');
-Route::get('user/token', 'App\Http\Controllers\AuthController@getToken');
-
-Route::post('user/create', 'App\Http\Controllers\EncryptionController@encryptUserCreation');
-Route::get('user/get', 'App\Http\Controllers\EncryptionController@getDocument');

@@ -27,7 +27,13 @@ return [
     */
 
     'env' => env('APP_ENV', 'production'),
+
     'couchdb-auth' => env('COUCHDB_AUTH', null),
+
+    'jwt_secret' => env('JWT_SECRET', null),
+
+    'jwt_token_duration' => env('JWT_TOKEN_DURATION', 60),
+
     /*
     |--------------------------------------------------------------------------
     | Application Debug Mode
