@@ -34,6 +34,8 @@ return [
 
     'jwt_token_duration' => env('JWT_TOKEN_DURATION', 60),
 
+    'hashing_algorithm' => env('HASHING_ALGORITHM', 'sha256'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Debug Mode

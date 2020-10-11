@@ -3,6 +3,7 @@
 
 namespace App\Http;
 
+use App\Models\ReturnStatuses;
 use Carbon\Carbon;
 
 /**
@@ -15,15 +16,17 @@ class AuthService
 {
 
     /**
+     * After user login credentials are checked and alright, this function generates token form him, which will be used for all next requests, until user log outs or token expires
+     *
      * @return string
      */
-    public function getToken() {
+    public function getToken($user) {
 
         // create token header
         $header = $this->createTokenHeader();
 
         // create token payload
-        $payload = $this->createTokenPayload(null);
+        $payload = $this->createTokenPayload($user);
 
         // create signature
         $signature = $this->createSignature($header, $payload);
@@ -32,13 +35,93 @@ class AuthService
     }
 
     /**
+     * Used by JWT middleware to extract token from the incoming request
+     *
+     * @param $headers
+     * @return false|string
+     */
+    public function getBearerToken($headers)
+    {
+        $header = $headers->get('Authorization', '');
+        if (str_starts_with($header, 'Bearer ')) {
+            return substr($header, 7);
+        }
+
+        return '';
+    }
+
+    /**
+     * Used by JWT middleware to check if incoming user token is valid (maybe expired or signature corrupted)
+     *
+     * @param $token
+     * @return array
+     */
+    public function checkIfTokenIsValid($token) {
+
+        // split the token
+        $tokenParts = explode('.', $token);
+        $header = base64_decode($tokenParts[0]);
+        $payload = base64_decode($tokenParts[1]);
+        $signatureProvided = $tokenParts[2];
+
+        // check the expiration time
+        $expiration = Carbon::createFromTimestamp(json_decode($payload)->expiration_time);
+        $tokenExpired = (Carbon::now()->diffInSeconds($expiration, false) < 0);
+
+        //die("sec: " . Carbon::now()->diffInSeconds($expiration, false));
+        if ($tokenExpired) {
+            return [
+                'valid' => false,
+                'response' => ReturnStatuses::TOKEN_EXPIRED
+            ];
+        }
+
+        // build a signature again, based on the header and payload using the secret, so we can compare it with the received one
+        $base64UrlHeader = $this->base64UrlEncode($header);
+        $base64UrlPayload = $this->base64UrlEncode($payload);
+        $signature = hash_hmac(config('app.hashing_algorithm'), $base64UrlHeader . "." . $base64UrlPayload, config('app.jwt_secret'), true);
+        $base64UrlSignature = $this->base64UrlEncode($signature);
+
+        // verify it matches the signature provided in the token
+        $signatureValid = ($base64UrlSignature === $signatureProvided);
+
+        if (!$signature) {
+            return [
+                'valid' => false,
+                'response' => ReturnStatuses::INVALID_TOKEN_SIGNATURE
+            ];
+        }
+
+        // if all cheks are passed, user has valid token, so request can pass the middleware
+        return [
+            'valid' => true
+        ];
+
+//        echo "Header:\n" . $header . "\n";
+//        echo "Payload:\n" . $payload . "\n";
+//
+//        if ($tokenExpired) {
+//            echo "Token has expired.\n";
+//        } else {
+//            echo "Token has not expired yet.\n";
+//        }
+//
+//        if ($signatureValid) {
+//            echo "The signature is valid.\n";
+//        } else {
+//            echo "The signature is NOT valid\n";
+//        }
+    }
+
+
+    /**
      * @param $header
      * @param $payload
      * @return mixed
      */
     private function createSignature($header, $payload) {
 
-        $signature = hash_hmac('sha256', $header . "." . $payload, config('app.jwt_secret'), true);
+        $signature = hash_hmac(config('app.hashing_algorithm'), $header . "." . $payload, config('app.jwt_secret'), true);
 
         return $this->base64UrlEncode($signature);
     }
@@ -97,54 +180,6 @@ class AuthService
             ['-', '_', ''],
             base64_encode($text)
         );
-    }
-
-    public function getBearerToken($headers)
-    {
-        $header = $headers->get('Authorization', '');
-        if (str_starts_with($header, 'Bearer ')) {
-            return substr($header, 7);
-        }
-
-        return '';
-    }
-
-    public function checkIfTokenIsValid($token) {
-
-        // split the token
-        $tokenParts = explode('.', $token);
-        $header = base64_decode($tokenParts[0]);
-        $payload = base64_decode($tokenParts[1]);
-        $signatureProvided = $tokenParts[2];
-
-        //die(print_r($payload));
-        // check the expiration time
-        $expiration = Carbon::createFromTimestamp(json_decode($payload)->expiration_time);
-        $tokenExpired = (Carbon::now()->diffInSeconds($expiration, false) < 0);
-
-        // build a signature based on the header and payload using the secret
-        $base64UrlHeader = $this->base64UrlEncode($header);
-        $base64UrlPayload = $this->base64UrlEncode($payload);
-        $signature = hash_hmac('sha256', $base64UrlHeader . "." . $base64UrlPayload, config('app.jwt_secret'), true);
-        $base64UrlSignature = $this->base64UrlEncode($signature);
-
-        // verify it matches the signature provided in the token
-        $signatureValid = ($base64UrlSignature === $signatureProvided);
-
-        echo "Header:\n" . $header . "\n";
-        echo "Payload:\n" . $payload . "\n";
-
-        if ($tokenExpired) {
-            echo "Token has expired.\n";
-        } else {
-            echo "Token has not expired yet.\n";
-        }
-
-        if ($signatureValid) {
-            echo "The signature is valid.\n";
-        } else {
-            echo "The signature is NOT valid\n";
-        }
     }
 
 }

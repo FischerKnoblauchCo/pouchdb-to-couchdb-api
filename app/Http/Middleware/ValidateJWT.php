@@ -30,18 +30,12 @@ class ValidateJWT
             return response()->json(ReturnStatuses::UNAUTHORIZED);
         }
 
-        //die($token);
-        //die(print_R($headers->get('authorization')));
-        // extract Bearer token from the request
-        //$token = $headers->Bearer ? $headers->Bearer : '';
+        $info = $authService->checkIfTokenIsValid($token);
+        //die(print_r($info));
 
-        $authService->checkIfTokenIsValid($token);
-
-        die("END");
-
-//
-//        // check if token is valid
-
+        if (isset($info['valid']) && $info['valid'] == false) { // token isnt valid
+            return response()->json($info['response']);
+        }
 
         return $next($request);
     }
