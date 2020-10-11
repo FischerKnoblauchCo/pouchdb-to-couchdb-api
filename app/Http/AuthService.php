@@ -5,6 +5,7 @@ namespace App\Http;
 
 use App\Models\ReturnStatuses;
 use Carbon\Carbon;
+use Symfony\Component\HttpFoundation\Cookie;
 
 /**
  * @Author: Mirza Oglecevac
@@ -14,6 +15,35 @@ use Carbon\Carbon;
  */
 class AuthService
 {
+
+    /**
+     * Here we set access token to user cookie, which will user use for accessing other server resources
+     *
+     * @param $response
+     * @param $token
+     * @return mixed
+     */
+    public function setTokenInCookie($response, $token) {
+
+        $currentTimestamp = time();
+        // TODO because we are in UTC 2 timezone, we need to add 2h to this (is seconds)
+        $currentTimestamp = $currentTimestamp + 7200;
+
+        $response->headers->setCookie( // with this cookie user will send every other request, to identify himself
+            new Cookie('access_token',
+                $token,
+                $currentTimestamp + $this->getTokenDurationInSeconds(),
+                '/',
+                '', // TODO this is client domain from where request is sent
+                config('session.secure'),
+                config('session.http_only'),
+                false,
+                config('session.same_site')
+            )
+        );
+
+        return $response;
+    }
 
     /**
      * After user login credentials are checked and alright, this function generates token form him, which will be used for all next requests, until user log outs or token expires
@@ -68,7 +98,6 @@ class AuthService
         $expiration = Carbon::createFromTimestamp(json_decode($payload)->expiration_time);
         $tokenExpired = (Carbon::now()->diffInSeconds($expiration, false) < 0);
 
-        //die("sec: " . Carbon::now()->diffInSeconds($expiration, false));
         if ($tokenExpired) {
             return [
                 'valid' => false,
@@ -85,32 +114,19 @@ class AuthService
         // verify it matches the signature provided in the token
         $signatureValid = ($base64UrlSignature === $signatureProvided);
 
-        if (!$signature) {
+        if (!$signatureValid) {
             return [
                 'valid' => false,
                 'response' => ReturnStatuses::INVALID_TOKEN_SIGNATURE
             ];
         }
 
-        // if all cheks are passed, user has valid token, so request can pass the middleware
+        // if all checks are passed, user has valid token, so request can pass the middleware
         return [
-            'valid' => true
+            'valid' => true,
+            'response' => $payload // we need payload to get user id, which we will use as a key for storing his token in cookies
         ];
 
-//        echo "Header:\n" . $header . "\n";
-//        echo "Payload:\n" . $payload . "\n";
-//
-//        if ($tokenExpired) {
-//            echo "Token has expired.\n";
-//        } else {
-//            echo "Token has not expired yet.\n";
-//        }
-//
-//        if ($signatureValid) {
-//            echo "The signature is valid.\n";
-//        } else {
-//            echo "The signature is NOT valid\n";
-//        }
     }
 
 
@@ -148,7 +164,7 @@ class AuthService
         $expirationTime = $this->setTokenExpirationTime($currentTime);
 
         $payload = json_encode([
-            //'user_id' => 1,
+            'user_id' => 2, // TODO temporary - we need real user id here
             //'role' => 'admin',
             'logged_in_time' => $currentTime,
             'expiration_time' => $expirationTime
@@ -180,6 +196,12 @@ class AuthService
             ['-', '_', ''],
             base64_encode($text)
         );
+    }
+
+    private function getTokenDurationInSeconds() {
+
+        $durationInMinutes = config('app.jwt_token_duration');
+        return $durationInMinutes * 60;
     }
 
 }

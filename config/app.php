@@ -28,6 +28,8 @@ return [
 
     'env' => env('APP_ENV', 'production'),
 
+    'app_url' => env('APP_URL', null),
+
     'couchdb-auth' => env('COUCHDB_AUTH', null),
 
     'jwt_secret' => env('JWT_SECRET', null),
@@ -75,7 +77,7 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => 'Europe/Berlin',
 
     /*
     |--------------------------------------------------------------------------

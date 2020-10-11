@@ -31,11 +31,14 @@ class ValidateJWT
         }
 
         $info = $authService->checkIfTokenIsValid($token);
-        //die(print_r($info));
 
         if (isset($info['valid']) && $info['valid'] == false) { // token isnt valid
             return response()->json($info['response']);
         }
+
+        // set access token to cookie, so we can use it later on in response middleware
+//        $payload = json_decode($info['response']);
+//        $_COOKIE[$payload->user_id] = $token; // for each user we assign cookie with his id as a key - to that key is assigned access_token, which will be returned as a cookie in response middleware
 
         return $next($request);
     }

@@ -33,4 +33,9 @@ class ReturnStatuses extends Model
         'status' => 400,
         'message' => 'Bad request'
     ];
+
+    const LOGIN_SUCCESSFULL = [
+        'status' => 200,
+        'message' => 'Login successfull'
+    ];
 }

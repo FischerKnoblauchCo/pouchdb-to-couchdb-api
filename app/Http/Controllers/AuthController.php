@@ -8,6 +8,7 @@ use Lcobucci\JWT\Builder;
 use Illuminate\Http\Request;
 use Lcobucci\JWT\Signer;
 use Illuminate\Support\Facades\Hash;
+use Symfony\Component\HttpFoundation\Cookie;
 
 
 class AuthController extends Controller
@@ -40,10 +41,11 @@ class AuthController extends Controller
         $authService = new AuthService();
         $token = $authService->getToken(null);
 
-        return [
-            'status' => 200,
-            'token' => $token
-        ];
+        $response = response()->json(ReturnStatuses::LOGIN_SUCCESSFULL);
+        $response = $authService->setTokenInCookie($response, $token);
+
+       // die(print_r($response));
+        return $response;
 
     }
 
