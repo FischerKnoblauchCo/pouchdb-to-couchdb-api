@@ -24,7 +24,7 @@ class ValidateJWT
             $authService = new AuthService();
 
             // get user JWT token from request cookies, and check if its valid (not malicious, not expired)
-            $token = 'ff'; $request->cookie('access_token');
+            $token = $request->cookie('access_token');
 
             // check if token is no sent
             if (!isset($token) or empty($token)) {

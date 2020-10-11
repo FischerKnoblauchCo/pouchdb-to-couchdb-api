@@ -90,6 +90,15 @@ class AuthService
 
         // split the token
         $tokenParts = explode('.', $token);
+        //die(print_r($tokenParts));
+        // check if token has 3 parts, if not, token is invalid for sure
+        if (count($tokenParts) != 3) {
+            return [
+                'valid' => false,
+                'response' => ReturnStatuses::BAD_TOKEN_FORMAT
+            ];
+        }
+
         $header = base64_decode($tokenParts[0]);
         $payload = base64_decode($tokenParts[1]);
         $signatureProvided = $tokenParts[2];

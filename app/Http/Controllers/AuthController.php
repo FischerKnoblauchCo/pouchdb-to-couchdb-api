@@ -21,6 +21,19 @@ class AuthController extends Controller
      */
     public function login(Request $request) {
 
+        $authService = new AuthService();
+
+        // first check if user already has active token
+        $token = $request->cookie('access_token');
+        if (isset($token)) {
+            // check if its valid
+            $info = $authService->checkIfTokenIsValid($token);
+
+            if (isset($info['valid']) && $info['valid'] == true) {
+                return response()->json(ReturnStatuses::VALID_TOKEN_EXISTS);
+            }
+        }
+
         $data = json_decode($request->getContent(), true);
         $username = $data['username'];
         $password = $data['password'];
@@ -44,7 +57,6 @@ class AuthController extends Controller
         $response = response()->json(ReturnStatuses::LOGIN_SUCCESSFULL);
         $response = $authService->setTokenInCookie($response, $token);
 
-       // die(print_r($response));
         return $response;
 
     }

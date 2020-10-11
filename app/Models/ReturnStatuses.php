@@ -19,6 +19,11 @@ class ReturnStatuses extends Model
         'message' => 'Token expired'
     ];
 
+    const BAD_TOKEN_FORMAT = [
+        'status' => 400,
+        'message' => 'Token has bad format'
+    ];
+
     const INVALID_TOKEN_SIGNATURE = [
         'status' => 401,
         'message' => 'Invalid token signature'
@@ -39,4 +44,8 @@ class ReturnStatuses extends Model
         'message' => 'Login successfull'
     ];
 
+    const VALID_TOKEN_EXISTS = [
+        'status' => 304,
+        'message' => 'User already has valid token'
+    ];
 }
