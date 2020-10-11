@@ -23,6 +23,8 @@ Route::middleware('jwt_validate')->group(function () {
 
     Route::post('user/create', 'App\Http\Controllers\EncryptionController@encryptUserCreation');
     Route::get('user/get', 'App\Http\Controllers\EncryptionController@getDocument');
+
+    Route::post('user/logout', 'App\Http\Controllers\AuthController@logout');
 });
 
 //Route::middleware('jwt_validate')->get('/user', function (Request $request) {

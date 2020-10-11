@@ -55,10 +55,25 @@ class AuthController extends Controller
         $token = $authService->getToken(null);
 
         $response = response()->json(ReturnStatuses::LOGIN_SUCCESSFULL);
-        $response = $authService->setTokenInCookie($response, $token);
+        $response = $authService->setTokenInCookie($response, $token, 'LOGIN');
 
         return $response;
 
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function logout(Request $request) {
+
+        $authService = new AuthService();
+
+        // cookie is valid, because request couldnt move through ValidateJWT if it isnt
+        $token = '';
+        $response = response()->json(ReturnStatuses::LOGOUT_SUCCESSFULL);
+        $response = $authService->setTokenInCookie($response, $token, 'LOGOUT');
+
+        return $response;
     }
 
     /**

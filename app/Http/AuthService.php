@@ -23,16 +23,12 @@ class AuthService
      * @param $token
      * @return mixed
      */
-    public function setTokenInCookie($response, $token) {
-
-        $currentTimestamp = time();
-        // TODO because we are in UTC 2 timezone, we need to add 2h to this (is seconds)
-        $currentTimestamp = $currentTimestamp + 7200;
+    public function setTokenInCookie($response, $token, $cookieType) {
 
         $response->headers->setCookie( // with this cookie user will send every other request, to identify himself
             new Cookie('access_token',
                 $token,
-                $currentTimestamp + $this->getTokenDurationInSeconds(),
+                $this->getCookieExpiratonTime($cookieType),
                 '/',
                 '', // TODO this is client domain from where request is sent
                 config('session.secure'),
@@ -43,6 +39,38 @@ class AuthService
         );
 
         return $response;
+    }
+
+    /**
+     * @param $type
+     * @return float|int
+     */
+    public function getCookieExpiratonTime($type) {
+
+        switch ($type) {
+            case 'LOGOUT':
+                $time = 1;
+                break;
+            case 'LOGIN':
+                $time = $this->getFreshTokenExpirationTime();
+                break;
+            default:
+                $time = 1;
+        }
+
+        return $time;
+    }
+
+    /**
+     * @return float|int
+     */
+    private function getFreshTokenExpirationTime() {
+
+        $currentTimestamp = time();
+        // TODO because we are in UTC 2 timezone, we need to add 2h to this (is seconds)
+        $currentTimestamp = $currentTimestamp + 7200;
+
+        return $currentTimestamp + $this->getTokenDurationInSeconds();
     }
 
     /**
@@ -90,7 +118,7 @@ class AuthService
 
         // split the token
         $tokenParts = explode('.', $token);
-        //die(print_r($tokenParts));
+
         // check if token has 3 parts, if not, token is invalid for sure
         if (count($tokenParts) != 3) {
             return [

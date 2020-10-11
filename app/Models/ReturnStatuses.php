@@ -44,6 +44,11 @@ class ReturnStatuses extends Model
         'message' => 'Login successfull'
     ];
 
+    const LOGOUT_SUCCESSFULL = [
+        'status' => 200,
+        'message' => 'Logout successfull'
+    ];
+
     const VALID_TOKEN_EXISTS = [
         'status' => 304,
         'message' => 'User already has valid token'
