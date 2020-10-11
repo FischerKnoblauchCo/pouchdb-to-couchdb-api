@@ -18,27 +18,34 @@ class ValidateJWT
      */
     public function handle(Request $request, Closure $next)
     {
-        $authService = new AuthService();
 
-        // get user JWT token from request header, and check if its valid (not malicious, not expired)
-        $headers = $request->headers;
+        try {
 
-        $token = $authService->getBearerToken($headers);
+            $authService = new AuthService();
 
-        // check if token is no sent
-        if (!isset($token) or empty($token)) {
-            return response()->json(ReturnStatuses::UNAUTHORIZED);
+            // get user JWT token from request cookies, and check if its valid (not malicious, not expired)
+            $token = 'ff'; $request->cookie('access_token');
+
+            // check if token is no sent
+            if (!isset($token) or empty($token)) {
+                return response()->json(ReturnStatuses::UNAUTHORIZED);
+            }
+
+            $info = $authService->checkIfTokenIsValid($token);
+
+            if (isset($info['valid']) && $info['valid'] == false) { // token isnt valid
+                return response()->json($info['response']);
+            }
+
+        } catch (\Exception $e) {
+            $status = [
+                'status' => 400,
+                'message' => 'Bad request',
+                'reason' => 'Code exception'
+            ];
+
+            return response()->json($status);
         }
-
-        $info = $authService->checkIfTokenIsValid($token);
-
-        if (isset($info['valid']) && $info['valid'] == false) { // token isnt valid
-            return response()->json($info['response']);
-        }
-
-        // set access token to cookie, so we can use it later on in response middleware
-//        $payload = json_decode($info['response']);
-//        $_COOKIE[$payload->user_id] = $token; // for each user we assign cookie with his id as a key - to that key is assigned access_token, which will be returned as a cookie in response middleware
 
         return $next($request);
     }

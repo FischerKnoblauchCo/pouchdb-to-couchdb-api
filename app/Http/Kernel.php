@@ -43,7 +43,7 @@ class Kernel extends HttpKernel
         'api' => [
             'throttle:api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            'response_cookies'
+           // 'response_cookies'
         ],
     ];
 
@@ -65,6 +65,6 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'jwt_validate' => \App\Http\Middleware\ValidateJWT::class,
-        'response_cookies' => \App\Http\Middleware\ResponseCookies::class
+        //'response_cookies' => \App\Http\Middleware\ResponseCookies::class
     ];
 }

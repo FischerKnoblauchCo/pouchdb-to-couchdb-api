@@ -38,4 +38,5 @@ class ReturnStatuses extends Model
         'status' => 200,
         'message' => 'Login successfull'
     ];
+
 }
