@@ -73,10 +73,10 @@ class UserController extends Controller
         $revId = $request->get('rev');
 
         // TODO delete user by its id and rev
-        //die($doc_id . ' - ' . $revId);
+        die($doc_id . ' - ' . $revId);
     }
 
-    public function getDocument(Request $request) {
+    public function getUser(Request $request) {
 
         $documentId = $request->get('document_id');
 
@@ -104,5 +104,20 @@ class UserController extends Controller
         return response()->json([
             $dataToHandle
         ]);
+    }
+
+    /**
+     * Get al users with docs
+     */
+    public function getUsers() { // _all_docs?include_docs=true
+
+        $response = $this->client->request('GET', 'http://' . $this->authentication . '@127.0.0.1:5984/users_pouch/_all_docs?include_docs=true');
+
+        $responseData = json_decode($response->getBody()->getContents());
+
+        return response()->json([
+            $responseData
+        ]);
+
     }
 }
