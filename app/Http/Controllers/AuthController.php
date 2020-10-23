@@ -37,7 +37,7 @@ class AuthController extends Controller
         $data = json_decode($request->getContent(), true);
         $username = $data['username'];
         $password = $data['password'];
-        $valid = $data['valid']; // TODO using temporary
+        $valid = true; //$data['valid']; // TODO using temporary
 
         // check if credentials are sent
         if (empty($username) or empty($password)) {
