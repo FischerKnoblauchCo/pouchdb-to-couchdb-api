@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use Mews\Purifier\Purifier;
 
-class EncryptionController extends Controller
+class UserController extends Controller
 {
 
     private $keysToEncrypt = ['name'];
@@ -22,7 +22,7 @@ class EncryptionController extends Controller
         $this->authentication = config('app.couchdb-auth');
     }
 
-    public function encryptUserCreation(Request $request) {
+    public function createUser(Request $request) {
 
         //die(print_r($request->all()));
         $userCreateData = $request->all(); //['doc'];
@@ -65,6 +65,15 @@ class EncryptionController extends Controller
             'data' => $response
         ]);
 
+    }
+
+    public function deleteUser(Request $request, $doc_id) {
+
+        //$docId = $request->get('doc_id');
+        $revId = $request->get('rev');
+
+        // TODO delete user by its id and rev
+        //die($doc_id . ' - ' . $revId);
     }
 
     public function getDocument(Request $request) {
