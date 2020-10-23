@@ -73,7 +73,12 @@ class UserController extends Controller
         $revId = $request->get('rev');
 
         // TODO delete user by its id and rev
-        die($doc_id . ' - ' . $revId);
+       // die($doc_id . ' - ' . $revId);
+        $response = $this->client->request('DELETE', 'http://' . $this->authentication . '@127.0.0.1:5984/users_pouch/' . $doc_id . '?rev=' . $revId);
+
+        return response()->json([
+            $response
+        ]);
     }
 
     public function getUser(Request $request) {
@@ -126,6 +131,9 @@ class UserController extends Controller
             if (isset($item->doc->password)) {
                 unset($item->doc->password);
             }
+//            else {
+//                unset($item); // filter
+//            }
 
         }
 
