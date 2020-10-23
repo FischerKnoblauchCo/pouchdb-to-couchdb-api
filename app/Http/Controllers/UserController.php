@@ -115,6 +115,24 @@ class UserController extends Controller
 
         $responseData = json_decode($response->getBody()->getContents());
 
+        $dataToHandle = $responseData->rows;
+
+        foreach ($dataToHandle as $item) {
+
+            if (isset($item->doc->name)) {
+                $item->doc->name = Crypt::decrypt($item->doc->name);
+            }
+
+            if (isset($item->doc->password)) {
+                unset($item->doc->password);
+            }
+
+        }
+
+        $responseData->rows = $dataToHandle;
+        //die(print_r($responseData->rows));
+        // decrypt content
+
         return response()->json([
             $responseData
         ]);
