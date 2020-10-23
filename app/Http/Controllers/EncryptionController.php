@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Hash;
 use Mews\Purifier\Purifier;
 
 class EncryptionController extends Controller
 {
 
-    private $keysToEncrypt = ['last_name'];
+    private $keysToEncrypt = ['name'];
+    private $keysToHash = ['password'];
     private $client;
     private $authentication;
     private $purifier;
@@ -22,7 +24,8 @@ class EncryptionController extends Controller
 
     public function encryptUserCreation(Request $request) {
 
-        $userCreateData = $request->all()['doc'];
+        //die(print_r($request->all()));
+        $userCreateData = $request->all(); //['doc'];
 
         $dataToSend = [];
 
@@ -33,6 +36,10 @@ class EncryptionController extends Controller
             if (in_array($key, $this->keysToEncrypt)) {
 
                 $dataToSend[$key] = Crypt::encrypt(strip_tags(clean($item)));
+
+            } else if (in_array($key, $this->keysToHash)) {
+
+                $dataToSend[$key] = Hash::make(strip_tags(clean($item)));
 
             } else {
 

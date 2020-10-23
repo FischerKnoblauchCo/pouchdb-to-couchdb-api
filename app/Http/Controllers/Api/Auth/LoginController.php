@@ -15,8 +15,9 @@ class LoginController extends Controller
 
         return response()->json([
             'status' => 200,
-            'token' => $token
-        ]);
+            'message' => 'Login successful'
+            //'token' => $token
+        ])->cookie('access_token', $token, config('app.jwt_token_duration'));
     }
 
     private function attempt() {
