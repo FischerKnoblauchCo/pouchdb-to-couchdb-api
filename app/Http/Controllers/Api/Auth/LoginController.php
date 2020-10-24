@@ -11,7 +11,7 @@ class LoginController extends Controller
 
         $creds = $request->only(['username', 'password']);
 
-        $token = auth()->attempt($creds); //'325z6trh56j6u6'; //auth()->attempt($creds);
+        $token = 'dgfdhghfg'; //auth()->attempt($creds); //'325z6trh56j6u6'; //auth()->attempt($creds);
 
         return response()->json([
             'status' => 200,

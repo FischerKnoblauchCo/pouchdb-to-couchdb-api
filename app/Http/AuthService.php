@@ -30,11 +30,19 @@ class AuthService
                 $token,
                 $this->getCookieExpiratonTime($cookieType),
                 '/',
-                '', // TODO this is client domain from where request is sent
-                config('session.secure'),
-                config('session.http_only'),
+                null, // TODO this is client domain from where request is sent
                 false,
-                config('session.same_site')
+                false,
+                false,
+                null
+//                $token,
+//                $this->getCookieExpiratonTime($cookieType),
+//                '/',
+//                null, // TODO this is client domain from where request is sent
+//                false,
+//                false,
+//                false,
+//                null
             )
         );
 
