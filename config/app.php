@@ -38,6 +38,8 @@ return [
 
     'hashing_algorithm' => env('HASHING_ALGORITHM', 'sha256'),
 
+    'csrf_secret' => env('CSRF_SECRET', null),
+
     /*
     |--------------------------------------------------------------------------
     | Application Debug Mode

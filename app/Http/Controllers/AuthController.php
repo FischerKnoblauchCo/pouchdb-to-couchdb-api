@@ -26,6 +26,7 @@ class AuthController extends Controller
         // first check if user already has active token
         $token = $request->cookie('access_token');
 
+
         //die("token: " . $token);
         if (isset($token)) {
             // check if its valid
@@ -59,7 +60,10 @@ class AuthController extends Controller
         $response = response()->json(ReturnStatuses::LOGIN_SUCCESSFULL);
         $response = $authService->setTokenInCookie($response, $token, 'LOGIN');
 
-        return $response; //->cookie('access_token', $token, config('app.jwt_token_duration'));;
+        $csrfToken = $authService->getUserCsrfToken($token);
+        return response()->json(['token' => $csrfToken]);
+
+        return $response->header('X-CSRF-TOKEN', 1); //->cookie('access_token', $token, config('app.jwt_token_duration'));;
 
     }
 

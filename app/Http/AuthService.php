@@ -5,6 +5,7 @@ namespace App\Http;
 
 use App\Models\ReturnStatuses;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Config;
 use Symfony\Component\HttpFoundation\Cookie;
 
 /**
@@ -101,7 +102,7 @@ class AuthService
     }
 
     /**
-     * Used by JWT middleware to extract token from the incoming request
+     * NOT USED - Used by JWT middleware to extract token from the incoming request
      *
      * @param $headers
      * @return false|string
@@ -140,7 +141,7 @@ class AuthService
         $signatureProvided = $tokenParts[2];
 
         // check the expiration time
-        $expiration = Carbon::createFromTimestamp(json_decode($payload)->expiration_time);
+        $expiration = Carbon::createFromTimestamp(json_decode($payload)->exp);
         $tokenExpired = (Carbon::now()->diffInSeconds($expiration, false) < 0);
 
         if ($tokenExpired) {
@@ -209,10 +210,13 @@ class AuthService
         $expirationTime = $this->setTokenExpirationTime($currentTime);
 
         $payload = json_encode([
-            'user_id' => 2, // TODO temporary - we need real user id here
+            'iss' => config('app.app_url'),
+            'iat' => $currentTime,
+            'exp' => $expirationTime,
+            'sub' => 2, // TODO temporary - we need real user id here
             //'role' => 'admin',
-            'logged_in_time' => $currentTime,
-            'expiration_time' => $expirationTime
+//            'logged_in_time' => $currentTime,
+//            'expiration_time' => $expirationTime
         ]);
 
         return $this->base64UrlEncode($payload);
@@ -249,4 +253,20 @@ class AuthService
         return $durationInMinutes * 60;
     }
 
+    public function getUserCsrfToken($token) {
+
+        $tokenParts = explode('.', $token);
+        $payload = base64_decode($tokenParts[1]);
+
+        $expires = json_decode($payload)->exp;
+        $userId = json_decode($payload)->sub;
+
+        $csrfTokenRaw = $expires . $userId;
+
+        $encrypter = new \Illuminate\Encryption\Encrypter( config('app.csrf_secret'), config( 'app.cipher' ));
+        $csrfToken = $encrypter->encrypt($csrfTokenRaw);
+        //$decrypted = $encrypter->decrypt( $encrypted );
+
+        return $csrfToken;
+    }
 }

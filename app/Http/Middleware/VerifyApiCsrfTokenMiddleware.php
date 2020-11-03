@@ -4,9 +4,8 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Cookie;
 
-class ResponseCookies
+class VerifyApiCsrfTokenMiddleware
 {
     /**
      * Handle an incoming request.
@@ -17,8 +16,19 @@ class ResponseCookies
      */
     public function handle(Request $request, Closure $next)
     {
-        $response = $next($request);
 
-        return $response;
+        // check if X-CSRF-TOKEN exists
+
+
+        // if no, reject request
+
+        // if yes, check if its valid
+
+        // if its not valid, reject request
+
+
+
+
+        return $next($request);
     }
 }
