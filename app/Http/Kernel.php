@@ -2,6 +2,7 @@
 
 namespace App\Http;
 
+use App\Http\Middleware\CleanUserData;
 use App\Http\Middleware\ValidateJWT;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
@@ -43,6 +44,7 @@ class Kernel extends HttpKernel
         'api' => [
             'throttle:api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            'clean_user_data'
            // 'response_cookies'
         ],
     ];
@@ -65,6 +67,7 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'jwt_validate' => \App\Http\Middleware\ValidateJWT::class,
+        'clean_user_data' => \App\Http\Middleware\CleanUserData::class
         //'response_cookies' => \App\Http\Middleware\ResponseCookies::class
     ];
 }
