@@ -61,9 +61,13 @@ class AuthController extends Controller
         $response = $authService->setTokenInCookie($response, $token, 'LOGIN');
 
         $csrfToken = $authService->getUserCsrfToken($token);
-        return response()->json(['token' => $csrfToken]);
+        //return response()->json(['token' => $csrfToken]);
 
-        return $response->header('X-CSRF-TOKEN', 1); //->cookie('access_token', $token, config('app.jwt_token_duration'));;
+        return $response
+                    ->header('Access-Control-Expose-Headers', [
+                        'X-CSRF-TOKEN'
+                    ])
+                    ->header('X-CSRF-TOKEN', $csrfToken); //->cookie('access_token', $token, config('app.jwt_token_duration'));;
 
     }
 

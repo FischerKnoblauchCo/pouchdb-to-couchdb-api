@@ -7,7 +7,8 @@
 
 <IfModule mod_headers.c>
    Header set Access-Control-Allow-Credentials "true"
-   #Header set Access-Control-Allow-Origin "*"
+   # Header set Access-Control-Expose-Headers: X-CSRF-TOKEN
+   # Header set Access-Control-Allow-Origin "*"
 
 </IfModule>
 
