@@ -5,7 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 
-class VerifyApiCsrfTokenMiddleware
+class CleanUserData
 {
     /**
      * Handle an incoming request.
@@ -16,19 +16,16 @@ class VerifyApiCsrfTokenMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
+        $inputs = $request->all();
 
-        // check if X-CSRF-TOKEN exists
-
-
-        // if no, reject request
-
-        // if yes, check if its valid
-
-        // if its not valid, reject request
-
-
-
+        array_walk_recursive($inputs, [$this, 'cleanInput']);
 
         return $next($request);
+    }
+
+    private function cleanInput(&$value, &$key) {
+
+        $key = clean($key);
+        $value = clean($value);
     }
 }
