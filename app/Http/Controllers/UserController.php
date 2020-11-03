@@ -35,37 +35,7 @@ class UserController extends Controller
 
         $userCreateData = $request->all(); //['doc'];
 
-        array_walk_recursive($userCreateData, [$this->userService, 'encryptUserData']);
-
-//        $dataToSend = [];
-//
-//        foreach($userCreateData as $key => $item) {
-//
-//            $key = strip_tags(clean($key));
-//
-//            if (in_array($key, $this->keysToEncrypt)) {
-//
-//                $dataToSend[$key] = Crypt::encrypt(strip_tags(clean($item)));
-//
-//            } else if (in_array($key, $this->keysToHash)) {
-//
-//                $dataToSend[$key] = Hash::make(strip_tags(clean($item)));
-//
-//            } else {
-//
-//                if ($key != '_rev') {
-//
-//                    if (is_array($item)) {
-//                        $dataToSend[$key] = $item;
-//                    } else {
-//                        $dataToSend[$key] = strip_tags(clean($item));
-//                    }
-//
-//                }
-//
-//            }
-//
-//        }
+        array_walk_recursive($userCreateData, [$this->userService, 'encryptOrHashUserData']);
 
         $response = $this->client->request('POST', 'http://' . $this->authentication . '@127.0.0.1:5984/users_pouch', [
             'body' => json_encode($userCreateData)
@@ -90,7 +60,6 @@ class UserController extends Controller
         $revId = $request->get('rev');
 
         // TODO delete user by its id and rev
-       // die($doc_id . ' - ' . $revId);
         $response = $this->client->request('DELETE', 'http://' . $this->authentication . '@127.0.0.1:5984/users_pouch/' . $doc_id . '?rev=' . $revId);
 
         return response()->json([
@@ -98,6 +67,11 @@ class UserController extends Controller
         ], ReturnStatuses::_200);
     }
 
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function getUser(Request $request) {
 
         $documentId = $request->get('document_id');
