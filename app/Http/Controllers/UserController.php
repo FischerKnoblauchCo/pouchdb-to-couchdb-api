@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ReturnStatuses;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
@@ -63,7 +64,7 @@ class UserController extends Controller
 
         return response()->json([
             'data' => $response
-        ]);
+        ], ReturnStatuses::_200);
 
     }
 
@@ -78,7 +79,7 @@ class UserController extends Controller
 
         return response()->json([
             $response
-        ]);
+        ], ReturnStatuses::_200);
     }
 
     public function getUser(Request $request) {
@@ -108,7 +109,7 @@ class UserController extends Controller
 
         return response()->json([
             $dataToHandle
-        ]);
+        ], ReturnStatuses::_200);
     }
 
     /**
@@ -143,7 +144,7 @@ class UserController extends Controller
 
         return response()->json([
             $responseData
-        ]);
+        ], ReturnStatuses::_200);
 
     }
 }

@@ -58,4 +58,12 @@ class ReturnStatuses extends Model
         'status' => 304,
         'message' => 'User already has valid token'
     ];
+
+
+    // return codes
+    const _400 = 400;
+    const _401 = 401;
+    const _404 = 404;
+    const _200 = 200;
+    const _304 = 304;
 }

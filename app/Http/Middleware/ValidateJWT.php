@@ -22,12 +22,6 @@ class ValidateJWT
 
         try {
 
-            Log::info($request->header('X-CSRF-TOKEN'));
-//            return json_encode([
-//                'csrf' => print_r($request->header('X-CSRF-TOKEN'))
-//            ]);
-
-
             $authService = new AuthService();
 
             // get user JWT token from request cookies, and check if its valid (not malicious, not expired)
@@ -35,13 +29,13 @@ class ValidateJWT
 
             // check if token is no sent
             if (!isset($token) or empty($token)) {
-                return response()->json(ReturnStatuses::UNAUTHORIZED);
+                return response()->json(ReturnStatuses::UNAUTHORIZED, ReturnStatuses::_401);
             }
 
             $info = $authService->checkIfTokenIsValid($token);
 
             if (isset($info['valid']) && $info['valid'] == false) { // token isnt valid
-                return response()->json($info['response']);
+                return response()->json($info['response'], ReturnStatuses::_401);
             }
 
             // check if csrf token is valid
@@ -49,17 +43,18 @@ class ValidateJWT
             $info = $authService->checkUserCsrfToken($token, $csrfToken);
 
             if (isset($info['valid']) && $info['valid'] == false) { // token isnt valid
-                return response()->json($info['response']);
+                return response()->json($info['response'], ReturnStatuses::_401);
             }
 
         } catch (\Exception $e) {
+
             $status = [
                 'status' => 400,
                 'message' => 'Bad request',
                 'reason' => 'Code exception ' // . $e->getMessage()
             ];
 
-            return response()->json($status);
+            return response()->json($status, ReturnStatuses::_400);
         }
 
         return $next($request);
