@@ -6,6 +6,7 @@ use App\Http\AuthService;
 use App\Models\ReturnStatuses;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ValidateJWT
 {
@@ -20,6 +21,12 @@ class ValidateJWT
     {
 
         try {
+
+            Log::info($request->header('X-CSRF-TOKEN'));
+//            return json_encode([
+//                'csrf' => print_r($request->header('X-CSRF-TOKEN'))
+//            ]);
+
 
             $authService = new AuthService();
 
@@ -37,11 +44,19 @@ class ValidateJWT
                 return response()->json($info['response']);
             }
 
+            // check if csrf token is valid
+            $csrfToken = $request->header('X-CSRF-TOKEN') ?? '';
+            $info = $authService->checkUserCsrfToken($token, $csrfToken);
+
+            if (isset($info['valid']) && $info['valid'] == false) { // token isnt valid
+                return response()->json($info['response']);
+            }
+
         } catch (\Exception $e) {
             $status = [
                 'status' => 400,
                 'message' => 'Bad request',
-                'reason' => 'Code exception'
+                'reason' => 'Code exception ' // . $e->getMessage()
             ];
 
             return response()->json($status);

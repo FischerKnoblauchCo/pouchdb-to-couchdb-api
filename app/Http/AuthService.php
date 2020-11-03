@@ -6,6 +6,7 @@ namespace App\Http;
 use App\Models\ReturnStatuses;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Cookie;
 
 /**
@@ -265,8 +266,53 @@ class AuthService
 
         $encrypter = new \Illuminate\Encryption\Encrypter( config('app.csrf_secret'), config( 'app.cipher' ));
         $csrfToken = $encrypter->encrypt($csrfTokenRaw);
-        //$decrypted = $encrypter->decrypt( $encrypted );
+
 
         return $csrfToken;
+    }
+
+    /**
+     * @param $token
+     * @param $csrfToken
+     * @return array
+     */
+    public function checkUserCsrfToken($token, $csrfToken) {
+
+        try {
+
+            $tokenParts = explode('.', $token);
+            $payload = base64_decode($tokenParts[1]);
+
+            $expires = json_decode($payload)->exp;
+            $userId = json_decode($payload)->sub;
+
+            $csrfTokenRaw = $expires . $userId;
+
+            $encrypter = new \Illuminate\Encryption\Encrypter( config('app.csrf_secret'), config( 'app.cipher' ));
+            $decrypted = $encrypter->decrypt($csrfToken);
+
+            // check if the encrypted string and the one we got from the JWT are the same
+            //Log::info($csrfTokenRaw . ' - ' . $decrypted);
+            if($csrfTokenRaw !== $decrypted) {
+
+                // user has invalid CSRF token - reject the request
+                return [
+                    'valid' => false,
+                    'response' => ReturnStatuses::INVALID_CSRF_TOKEN
+                ];
+            }
+
+        } catch (\Exception $e) {
+
+            return [
+                'valid' => false,
+                'response' => ReturnStatuses::INVALID_CSRF_TOKEN
+            ];
+        }
+
+        return [
+            'valid' => true
+        ];
+
     }
 }

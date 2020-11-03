@@ -29,6 +29,11 @@ class ReturnStatuses extends Model
         'message' => 'Invalid token signature'
     ];
 
+    const INVALID_CSRF_TOKEN = [
+        'status' => 401,
+        'message' => 'Invalid CSRF token'
+    ];
+
     const BAD_REQUEST = [
         'status' => 404,
         'message' => 'Bad request'
