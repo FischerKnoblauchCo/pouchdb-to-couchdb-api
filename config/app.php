@@ -40,6 +40,8 @@ return [
 
     'csrf_secret' => env('CSRF_SECRET', null),
 
+    'url_schema' => env('URL_SCHEMA', 'https'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Debug Mode

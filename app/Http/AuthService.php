@@ -6,6 +6,7 @@ namespace App\Http;
 use App\Models\ReturnStatuses;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Cookie;
 
@@ -17,6 +18,7 @@ use Symfony\Component\HttpFoundation\Cookie;
  */
 class AuthService
 {
+    use DbConnection;
 
     /**
      * Here we set access token to user cookie, which will user use for accessing other server resources
@@ -313,6 +315,44 @@ class AuthService
         return [
             'valid' => true
         ];
+
+    }
+
+    public function checkIfCredentialsAreValid($username, $password) {
+
+        try {
+
+            $response = $this->client->request('POST', $this->dbUrl . '/users_pouch/_find', [
+                'body' => json_encode([
+                    'selector' => [
+                        'username' => [
+                            '$eq' => $username
+                        ]
+                    ],
+                    //'limit' => 1
+                    //'use_index' => ['username-find']
+                ])
+            ]);
+
+            $data = (array)json_decode($response->getBody()->getContents());
+            $data = $data['docs'] ?? [];
+
+            if (empty($data)) { // user with this username doesnt exist
+                return false;
+            }
+
+
+            $user = $data[0];
+
+            if (Hash::check($password, $user->password)) {
+                return true;
+            } else {
+                return false;
+            }
+
+        } catch (\Exception $e) {
+            return false;
+        }
 
     }
 }

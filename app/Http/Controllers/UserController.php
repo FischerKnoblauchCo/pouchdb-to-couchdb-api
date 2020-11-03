@@ -38,9 +38,7 @@ class UserController extends Controller
 
         array_walk_recursive($userCreateData, [$this->userService, 'encryptOrHashUserData']);
 
-        $response = $this->client->request('POST', 'http://' . $this->authentication . '@127.0.0.1:5984/users_pouch', [
-            'body' => json_encode($userCreateData)
-        ]);
+        $response = $this->userService->createUser(null, $userCreateData, null);
 
         return response()->json([
             'data' => $response
@@ -61,7 +59,7 @@ class UserController extends Controller
         $revId = $request->get('rev');
 
         // TODO delete user by its id and rev
-        $response = $this->client->request('DELETE', 'http://' . $this->authentication . '@127.0.0.1:5984/users_pouch/' . $doc_id . '?rev=' . $revId);
+        $response = $this->userService->deleteUser($doc_id, $revId); //$this->client->request('DELETE', 'http://' . $this->authentication . '@127.0.0.1:5984/users_pouch/' . $doc_id . '?rev=' . $revId);
 
         return response()->json([
             $response
@@ -77,7 +75,7 @@ class UserController extends Controller
 
         $documentId = $request->get('document_id');
 
-        $response = $this->client->request('GET', 'http://' . $this->authentication . '@127.0.0.1:5984/users_pouch/' . $documentId);
+        $response = $this->userService->getUser($documentId);
 
         $dataToHandle = json_decode($response->getBody()->getContents());
 
@@ -93,7 +91,7 @@ class UserController extends Controller
      */
     public function getUsers() { // _all_docs?include_docs=true
 
-        $response = $this->client->request('GET', 'http://' . $this->authentication . '@127.0.0.1:5984/users_pouch/_all_docs?include_docs=true');
+        $response = $this->userService->getUsers();
 
         $responseData = json_decode($response->getBody()->getContents());
 

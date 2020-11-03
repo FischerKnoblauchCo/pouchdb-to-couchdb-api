@@ -26,8 +26,6 @@ class AuthController extends Controller
         // first check if user already has active token
         $token = $request->cookie('access_token');
 
-
-        //die("token: " . $token);
         if (isset($token)) {
             // check if its valid
             $info = $authService->checkIfTokenIsValid($token);
@@ -40,7 +38,6 @@ class AuthController extends Controller
         $data = json_decode($request->getContent(), true);
         $username = $data['username'];
         $password = $data['password'];
-        $valid = true; //$data['valid']; // TODO using temporary
 
         // check if credentials are sent
         if (empty($username) or empty($password)) {
@@ -49,8 +46,9 @@ class AuthController extends Controller
 
         // check if username and password are valid (in CouchDB) // TODO SEND REQUEST TO COUCHDB TO CHECK USER CREDENTIALS
         // TODO for now fake user validation upon temporary value from user request
+        $valid = $authService->checkIfCredentialsAreValid($username, $password);
         if (!$valid) {
-            return response()->json(ReturnStatuses::GENERAL_BAD_REQUEST);
+            return response()->json(ReturnStatuses::BAD_CREDENTIALS);
         }
 
         // user passed credentials check, generate JWT for him/her (token will be valid for 1 hour - after that token will be invalid and user will need to log in again)
@@ -61,18 +59,18 @@ class AuthController extends Controller
         $response = $authService->setTokenInCookie($response, $token, 'LOGIN');
 
         $csrfToken = $authService->getUserCsrfToken($token);
-        //return response()->json(['token' => $csrfToken]);
 
         return $response
                     ->header('Access-Control-Expose-Headers', [
                         'X-CSRF-TOKEN'
                     ])
-                    ->header('X-CSRF-TOKEN', $csrfToken); //->cookie('access_token', $token, config('app.jwt_token_duration'));;
+                    ->header('X-CSRF-TOKEN', $csrfToken);
 
     }
 
     /**
      * @param Request $request
+     * @return \Illuminate\Http\JsonResponse|mixed
      */
     public function logout(Request $request) {
 

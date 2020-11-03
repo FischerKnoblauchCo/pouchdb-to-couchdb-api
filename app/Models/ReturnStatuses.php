@@ -34,6 +34,11 @@ class ReturnStatuses extends Model
         'message' => 'Invalid CSRF token'
     ];
 
+    const BAD_CREDENTIALS = [
+        'status' => 401,
+        'message' => 'Invalid user credentials'
+    ];
+
     const BAD_REQUEST = [
         'status' => 404,
         'message' => 'Bad request'
