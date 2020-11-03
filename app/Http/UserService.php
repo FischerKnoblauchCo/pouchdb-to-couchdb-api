@@ -24,7 +24,6 @@ class UserService
 
     public function decryptUserData(&$value, $key) {
 
-        Log::info("user iteration: " . $key);
         if (in_array($key, MutationLists::ENCRYPT_LIST)) {
             $value = Crypt::decrypt($value);
         }

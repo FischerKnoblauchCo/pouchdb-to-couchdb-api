@@ -34,6 +34,7 @@ class UserController extends Controller
     public function createUser(Request $request) {
 
         $userCreateData = $request->all(); //['doc'];
+        $userCreateData['username'] = $userCreateData['name'];
 
         array_walk_recursive($userCreateData, [$this->userService, 'encryptOrHashUserData']);
 
