@@ -22,7 +22,7 @@ Route::get('user/token', 'App\Http\Controllers\AuthController@getToken'); // TOD
 Route::middleware('jwt_validate')->group(function () {
 
     Route::post('user/create', 'App\Http\Controllers\UserController@createUser');
-    Route::get('user/get', 'App\Http\Controllers\UserController@getDocument');
+    Route::get('user/get', 'App\Http\Controllers\UserController@getUser');
     Route::get('user/all', 'App\Http\Controllers\UserController@getUsers');
     Route::delete('user/{doc_id}', 'App\Http\Controllers\UserController@deleteUser');
 

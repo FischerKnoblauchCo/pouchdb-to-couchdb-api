@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\UserService;
 use App\Models\ReturnStatuses;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -16,50 +17,58 @@ class UserController extends Controller
     private $client;
     private $authentication;
     private $purifier;
+    private $userService;
 
     public function __construct()
     {
         $this->client = new \GuzzleHttp\Client(['headers' => ['Content-Type' => 'application/json']]);
         $this->authentication = config('app.couchdb-auth');
+        $this->userService = new UserService();
     }
 
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function createUser(Request $request) {
 
-        //die(print_r($request->all()));
         $userCreateData = $request->all(); //['doc'];
 
-        $dataToSend = [];
+        array_walk_recursive($userCreateData, [$this->userService, 'encryptUserData']);
 
-        foreach($userCreateData as $key => $item) {
-
-            $key = strip_tags(clean($key));
-
-            if (in_array($key, $this->keysToEncrypt)) {
-
-                $dataToSend[$key] = Crypt::encrypt(strip_tags(clean($item)));
-
-            } else if (in_array($key, $this->keysToHash)) {
-
-                $dataToSend[$key] = Hash::make(strip_tags(clean($item)));
-
-            } else {
-
-                if ($key != '_rev') {
-
-                    if (is_array($item)) {
-                        $dataToSend[$key] = $item;
-                    } else {
-                        $dataToSend[$key] = strip_tags(clean($item));
-                    }
-
-                }
-
-            }
-
-        }
+//        $dataToSend = [];
+//
+//        foreach($userCreateData as $key => $item) {
+//
+//            $key = strip_tags(clean($key));
+//
+//            if (in_array($key, $this->keysToEncrypt)) {
+//
+//                $dataToSend[$key] = Crypt::encrypt(strip_tags(clean($item)));
+//
+//            } else if (in_array($key, $this->keysToHash)) {
+//
+//                $dataToSend[$key] = Hash::make(strip_tags(clean($item)));
+//
+//            } else {
+//
+//                if ($key != '_rev') {
+//
+//                    if (is_array($item)) {
+//                        $dataToSend[$key] = $item;
+//                    } else {
+//                        $dataToSend[$key] = strip_tags(clean($item));
+//                    }
+//
+//                }
+//
+//            }
+//
+//        }
 
         $response = $this->client->request('POST', 'http://' . $this->authentication . '@127.0.0.1:5984/users_pouch', [
-            'body' => json_encode($dataToSend)
+            'body' => json_encode($userCreateData)
         ]);
 
         return response()->json([
@@ -68,6 +77,13 @@ class UserController extends Controller
 
     }
 
+
+    /**
+     * @param Request $request
+     * @param $doc_id
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function deleteUser(Request $request, $doc_id) {
 
         //$docId = $request->get('doc_id');
@@ -90,22 +106,7 @@ class UserController extends Controller
 
         $dataToHandle = json_decode($response->getBody()->getContents());
 
-        foreach($dataToHandle as $key => $item) {
-
-            $key = strip_tags(clean($key));
-
-            if (in_array($key, $this->keysToEncrypt)) {
-                $dataToHandle->$key = Crypt::decrypt(strip_tags(clean($item)));
-            } else {
-
-                if (is_array($item)) {
-                    $dataToHandle->$key = $item;
-                } else {
-                    $dataToHandle->$key = strip_tags(clean($item));
-                }
-
-            }
-        }
+        array_walk_recursive($dataToHandle, [$this->userService, 'decryptUserData']);
 
         return response()->json([
             $dataToHandle
@@ -121,26 +122,9 @@ class UserController extends Controller
 
         $responseData = json_decode($response->getBody()->getContents());
 
-        $dataToHandle = $responseData->rows;
-
-        foreach ($dataToHandle as $item) {
-
-            if (isset($item->doc->name)) {
-                $item->doc->name = Crypt::decrypt($item->doc->name);
-            }
-
-            if (isset($item->doc->password)) {
-                unset($item->doc->password);
-            }
-//            else {
-//                unset($item); // filter
-//            }
-
-        }
+        $dataToHandle = $this->userService->decryptUsersData($responseData->rows);
 
         $responseData->rows = $dataToHandle;
-        //die(print_r($responseData->rows));
-        // decrypt content
 
         return response()->json([
             $responseData

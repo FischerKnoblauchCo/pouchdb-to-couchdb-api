@@ -24,7 +24,6 @@ class CleanUserData
     }
 
     private function cleanInput(&$value, &$key) {
-
         $key = clean($key);
         $value = clean($value);
     }
