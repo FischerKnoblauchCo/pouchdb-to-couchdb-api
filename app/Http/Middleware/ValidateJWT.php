@@ -49,12 +49,12 @@ class ValidateJWT
         } catch (\Exception $e) {
 
             $status = [
-                'status' => 400,
+                'status' => 401,
                 'message' => 'Bad request',
                 'reason' => 'Code exception ' // . $e->getMessage()
             ];
 
-            return response()->json($status, ReturnStatuses::_400);
+            return response()->json($status, ReturnStatuses::_401);
         }
 
         return $next($request);

@@ -42,6 +42,10 @@ return [
 
     'url_schema' => env('URL_SCHEMA', 'https'),
 
+    'users_table' => env('USERS_TABLE', '_users'),
+
+    'user_prefix' => env('USER_PREFIX', 'org.couchdb.user:'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Debug Mode

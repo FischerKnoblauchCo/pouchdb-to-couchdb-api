@@ -9,11 +9,16 @@ class MutationLists extends Model
 {
     use HasFactory;
 
-    const ENCRYPT_LIST = [
-        'name'
+    const USER_ENCRYPT_LIST = [
+        'first_name',
+        'last_name',
+        'company',
+        'partner_id',
+        'land'
     ];
 
-    const HASH_LIST = [
-        'password'
+    const USER_HASH_LIST = [
+        'password_x'
     ];
+
 }

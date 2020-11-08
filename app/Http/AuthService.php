@@ -322,10 +322,10 @@ class AuthService
 
         try {
 
-            $response = $this->client->request('POST', $this->dbUrl . '/users_pouch/_find', [
+            $response = $this->client->request('POST', $this->dbUrl . '/' . config('app.users_table') . '/_find', [
                 'body' => json_encode([
                     'selector' => [
-                        'username' => [
+                        'name' => [
                             '$eq' => $username
                         ]
                     ],
@@ -335,16 +335,18 @@ class AuthService
             ]);
 
             $data = (array)json_decode($response->getBody()->getContents());
+
             $data = $data['docs'] ?? [];
 
             if (empty($data)) { // user with this username doesnt exist
                 return false;
             }
 
-
             $user = $data[0];
 
-            if (Hash::check($password, $user->password)) {
+            return true; // TODO implement solution later here
+
+            if (Hash::check($password, $user->password_x)) {
                 return true;
             } else {
                 return false;

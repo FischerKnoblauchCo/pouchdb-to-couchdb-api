@@ -34,7 +34,9 @@ class UserController extends Controller
     public function createUser(Request $request) {
 
         $userCreateData = $request->all(); //['doc'];
-        $userCreateData['username'] = $userCreateData['name'];
+        $userCreateData['_id'] = config('app.user_prefix') . $userCreateData['name'];
+        //unset($userCreateData['first_name']);
+        unset($userCreateData['passwordrepeat']); // TODO check if confirmation password is right
 
         array_walk_recursive($userCreateData, [$this->userService, 'encryptOrHashUserData']);
 
@@ -46,6 +48,20 @@ class UserController extends Controller
 
     }
 
+    public function editUser(Request $request) {
+
+        $userEditData = $request->all(); //['doc'];
+        //unset($userCreateData['first_name']);
+
+        array_walk_recursive($userEditData, [$this->userService, 'encryptOrHashUserData']);
+
+        $response = $this->userService->editUser(null, $userEditData, null);
+
+        return response()->json([
+            'data' => $response
+        ], ReturnStatuses::_200);
+
+    }
 
     /**
      * @param Request $request
@@ -59,7 +75,7 @@ class UserController extends Controller
         $revId = $request->get('rev');
 
         // TODO delete user by its id and rev
-        $response = $this->userService->deleteUser($doc_id, $revId); //$this->client->request('DELETE', 'http://' . $this->authentication . '@127.0.0.1:5984/users_pouch/' . $doc_id . '?rev=' . $revId);
+        $response = $this->userService->deleteUser($doc_id, $revId);
 
         return response()->json([
             $response

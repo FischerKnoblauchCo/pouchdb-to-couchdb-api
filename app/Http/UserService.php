@@ -26,18 +26,26 @@ class UserService
 
     public function encryptOrHashUserData(&$value, $key) {
 
-        if (in_array($key, MutationLists::ENCRYPT_LIST)) {
-            $value = Crypt::encrypt($value);
-        } else if(in_array($key, MutationLists::HASH_LIST)) {
-            $value = Hash::make($value);
+        if (!is_numeric($key)) {
+            if (in_array($key, MutationLists::USER_ENCRYPT_LIST)) {
+                $value = Crypt::encrypt($value);
+            } else if(in_array($key, MutationLists::USER_HASH_LIST)) {
+                $value = Hash::make($value);
+            }
         }
 
     }
 
     public function decryptUserData(&$value, $key) {
 
-        if (in_array($key, MutationLists::ENCRYPT_LIST)) {
-            $value = Crypt::decrypt($value);
+        if (in_array($key, MutationLists::USER_ENCRYPT_LIST)) {
+
+            try {
+                $value = Crypt::decrypt($value);
+            } catch (\Exception $e) {
+
+            }
+
         }
 
     }
@@ -60,8 +68,20 @@ class UserService
      */
     public function createUser($currentUser, $userCreateData, $dbClient) {
 
-        $response = $this->client->request('POST', $this->dbUrl . '/users_pouch', [
+        $response = $this->client->request('POST', $this->dbUrl . '/' . config('app.users_table'), [
             'body' => json_encode($userCreateData)
+        ]);
+
+        return $response;
+    }
+
+    public function editUser($currentUser, $userEditData, $dbClient) {
+
+        $id = $userEditData['_id'];
+        unset($userEditData['_id']);
+
+        $response = $this->client->request('PUT', $this->dbUrl . '/' . config('app.users_table') .'/' . $id, [
+            'body' => json_encode($userEditData)
         ]);
 
         return $response;
@@ -74,7 +94,7 @@ class UserService
      */
     public function getUser($documentId) {
 
-        $response = $this->client->request('GET', $this->dbUrl . '/users_pouch/' . $documentId);
+        $response = $this->client->request('GET', $this->dbUrl . '/' . config('app.users_table') . '/' . $documentId);
 
         return $response;
     }
@@ -85,14 +105,14 @@ class UserService
      */
     public function getUsers() {
 
-        $response = $this->client->request('GET', $this->dbUrl . '/users_pouch/_all_docs?include_docs=true');
+        $response = $this->client->request('GET', $this->dbUrl . '/' . config('app.users_table') . '/_all_docs?include_docs=true');
 
         return $response;
     }
 
     public function deleteUser($doc_id, $revId) {
 
-        $response = $this->client->request('DELETE', $this->dbUrl . '/users_pouch/' . $doc_id . '?rev=' . $revId);
+        $response = $this->client->request('DELETE', $this->dbUrl . '/' . config('app.users_table') . '/' . $doc_id . '?rev=' . $revId);
 
         return $response;
     }
