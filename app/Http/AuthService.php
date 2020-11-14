@@ -348,9 +348,7 @@ class AuthService
             $cookieData = $response->getHeader('Set-Cookie');
             $cookieValue = '';
             if (!empty($cookieData) && isset($cookieData[0])) {
-                //die(print_r($cookieData));
                 $cookieValue = $this->extractCouchDBCookieValue($cookieData[0]);
-                //die(print_r($cookieValue));
             }
 
             return $cookieValue;

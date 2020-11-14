@@ -105,7 +105,13 @@ class UserService
      */
     public function getUsers() {
 
-        $response = $this->client->request('GET', $this->dbUrl . '/' . config('app.users_table') . '/_all_docs?include_docs=true');
+        $response = $this->client->request('GET', $this->dbUrl . '/' . config('app.users_table') . '/_all_docs?include_docs=true', [
+            'headers' => [
+                'Cookie' => 'AuthSession=YWRtaW5pc3RyYXRvcjo1RkIwMkZEQzpdVM9qNikVFyaTH6HJCYDGFdq2UA'
+            ]
+        ]);
+
+       // die(print_r($response->getHeaders()));
 
         return $response;
     }
@@ -120,11 +126,11 @@ class UserService
     private function getDatabaseLink() {
 
         $schema = config('app.url_schema') . '://';
-        $authentication = config('app.couchdb-auth');
+        //$authentication = config('app.couchdb-auth');
         $dbIpAddress = '@' . config('database.connections.couchdb.host');
         $dbPort = ':' . config('database.connections.couchdb.port');
 
-        return $schema . $authentication . $dbIpAddress . $dbPort;
+        return $schema . $dbIpAddress . $dbPort; //  $authentication .
     }
 
 }
