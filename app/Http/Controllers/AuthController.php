@@ -46,8 +46,8 @@ class AuthController extends Controller
 
         // check if username and password are valid (in CouchDB) // TODO SEND REQUEST TO COUCHDB TO CHECK USER CREDENTIALS
         // TODO for now fake user validation upon temporary value from user request
-        $valid = $authService->checkIfCredentialsAreValid($username, $password);
-        if (!$valid) {
+        $cookie = $authService->checkIfCredentialsAreValid($username, $password);
+        if (empty($cookie) or !isset($cookie)) {
             return response()->json(ReturnStatuses::BAD_CREDENTIALS);
         }
 

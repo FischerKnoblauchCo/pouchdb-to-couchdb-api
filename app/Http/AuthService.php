@@ -322,39 +322,57 @@ class AuthService
 
         try {
 
-            $response = $this->client->request('POST', $this->dbUrl . '/' . config('app.users_table') . '/_find', [
+//            $response = $this->client->request('POST', $this->dbUrl . '/' . config('app.users_table') . '/_find', [
+//                'body' => json_encode([
+//                    'selector' => [
+//                        'name' => [
+//                            '$eq' => $username
+//                        ]
+//                    ],
+//                    //'limit' => 1
+//                    //'use_index' => ['username-find']
+//                ])
+//            ]);
+            //$data = (array)json_decode($response->getBody()->getContents());
+
+            // get session cookie with this credentials (if they are ok, we will get approprate answer)
+            $response = $this->client->request('POST', $this->dbUrl . '/_session', [
                 'body' => json_encode([
-                    'selector' => [
-                        'name' => [
-                            '$eq' => $username
-                        ]
-                    ],
-                    //'limit' => 1
-                    //'use_index' => ['username-find']
+                    'name' => $username,
+                    'password' => $password
                 ])
             ]);
 
-            $data = (array)json_decode($response->getBody()->getContents());
 
-            $data = $data['docs'] ?? [];
-
-            if (empty($data)) { // user with this username doesnt exist
-                return false;
+            // TODO if credentias are ok, in response we will get Set-Cookie header which contains cookie which will be used in future communication with CouchDB
+            $cookieData = $response->getHeader('Set-Cookie');
+            $cookieValue = '';
+            if (!empty($cookieData) && isset($cookieData[0])) {
+                //die(print_r($cookieData));
+                $cookieValue = $this->extractCouchDBCookieValue($cookieData[0]);
+                //die(print_r($cookieValue));
             }
 
-            $user = $data[0];
-
-            return true; // TODO implement solution later here
-
-            if (Hash::check($password, $user->password_x)) {
-                return true;
-            } else {
-                return false;
-            }
+            return $cookieValue;
 
         } catch (\Exception $e) {
             return false;
         }
 
     }
+
+    private function extractCouchDBCookieValue($data) {
+
+        // $data example: AuthSession=YWRtaW5pc3RyYXRvcjo1RkIwMkMwOTpB_Hqpodxslv78zaf1J4PbEcvtow; Version=1; Path=/; HttpOnly
+
+        // explode on equal character
+        $temp = explode('=', $data);
+
+        // explode on ; character
+        $temp = explode(';', $temp[1]);
+
+        return $temp[0];
+    }
+
+
 }
