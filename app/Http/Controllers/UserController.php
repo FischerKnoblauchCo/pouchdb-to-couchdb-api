@@ -14,14 +14,14 @@ class UserController extends Controller
 
     private $keysToEncrypt = ['name'];
     private $keysToHash = ['password'];
-    private $client;
+    //private $client;
     private $authentication;
     private $purifier;
     private $userService;
 
     public function __construct()
     {
-        $this->client = new \GuzzleHttp\Client(['headers' => ['Content-Type' => 'application/json']]);
+        //$this->client = new \GuzzleHttp\Client(['headers' => ['Content-Type' => 'application/json']]);
         $this->authentication = config('app.couchdb-auth');
         $this->userService = new UserService();
     }
@@ -105,9 +105,11 @@ class UserController extends Controller
     /**
      * Get al users with docs
      */
-    public function getUsers() { // _all_docs?include_docs=true
+    public function getUsers(Request $request) { // _all_docs?include_docs=true
 
-        $response = $this->userService->getUsers();
+        $sessionToken = $request->cookie('session_token');
+
+        $response = $this->userService->getUsers($sessionToken);
 
         $responseData = json_decode($response->getBody()->getContents());
 

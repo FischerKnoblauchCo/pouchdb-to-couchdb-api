@@ -12,13 +12,20 @@ use Illuminate\Support\Facades\Log;
 class UserService
 {
 
+    use DbConnection;
+
     //private $authentication;
     private $client;
     private $dbUrl;
 
     public function __construct()
     {
-        $this->client = new \GuzzleHttp\Client(['headers' => ['Content-Type' => 'application/json']]);
+        $this->client = new \GuzzleHttp\Client([
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Cookie' => ''
+            ]
+        ]);
         $this->dbUrl = $this->getDatabaseLink();
 
         //$this->authentication = config('app.couchdb-auth');
@@ -103,11 +110,11 @@ class UserService
      * @return \Psr\Http\Message\ResponseInterface
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getUsers() {
+    public function getUsers($sessionToken) {
 
         $response = $this->client->request('GET', $this->dbUrl . '/' . config('app.users_table') . '/_all_docs?include_docs=true', [
             'headers' => [
-                'Cookie' => 'AuthSession=YWRtaW5pc3RyYXRvcjo1RkIwMkZEQzpdVM9qNikVFyaTH6HJCYDGFdq2UA'
+                'Cookie' => $sessionToken
             ]
         ]);
 
@@ -123,14 +130,14 @@ class UserService
         return $response;
     }
 
-    private function getDatabaseLink() {
-
-        $schema = config('app.url_schema') . '://';
-        //$authentication = config('app.couchdb-auth');
-        $dbIpAddress = '@' . config('database.connections.couchdb.host');
-        $dbPort = ':' . config('database.connections.couchdb.port');
-
-        return $schema . $dbIpAddress . $dbPort; //  $authentication .
-    }
+//    private function getDatabaseLink() {
+//
+//        $schema = config('app.url_schema') . '://';
+//        //$authentication = config('app.couchdb-auth');
+//        $dbIpAddress = config('database.connections.couchdb.host');
+//        $dbPort = ':' . config('database.connections.couchdb.port');
+//
+//        return $schema . $dbIpAddress . $dbPort; //  $authentication .
+//    }
 
 }

@@ -27,8 +27,9 @@ class AuthService
      * @param $token
      * @return mixed
      */
-    public function setTokenInCookie($response, $token, $cookieType) {
+    public function setTokenInCookie($response, $token, $couchSession, $cookieType) {
 
+        // set API access token in cookie
         $response->headers->setCookie( // with this cookie user will send every other request, to identify himself
             new Cookie('access_token',
                 $token,
@@ -39,14 +40,20 @@ class AuthService
                 false,
                 false,
                 null
-//                $token,
-//                $this->getCookieExpiratonTime($cookieType),
-//                '/',
-//                null, // TODO this is client domain from where request is sent
-//                false,
-//                false,
-//                false,
-//                null
+            )
+        );
+
+        // set CouchDB session token in cookie
+        $response->headers->setCookie( // with this cookie user will send every other request, to identify himself
+            new Cookie('session_token',
+                $couchSession,
+                $this->getCookieExpiratonTime($cookieType),
+                '/',
+                null, // TODO this is client domain from where request is sent
+                false,
+                false,
+                false,
+                null
             )
         );
 
@@ -364,12 +371,12 @@ class AuthService
         // $data example: AuthSession=YWRtaW5pc3RyYXRvcjo1RkIwMkMwOTpB_Hqpodxslv78zaf1J4PbEcvtow; Version=1; Path=/; HttpOnly
 
         // explode on equal character
-        $temp = explode('=', $data);
+        $tempOne = explode('=', $data);
 
         // explode on ; character
-        $temp = explode(';', $temp[1]);
+        $tempTwo = explode(';', $tempOne[1]);
 
-        return $temp[0];
+        return $tempOne[0] . '=' . $tempTwo[0];
     }
 
 

@@ -20,9 +20,14 @@ trait DbConnection
 
         $schema = config('app.url_schema') . '://';
         //$authentication = config('app.couchdb-auth');
-        $dbIpAddress = '@' . config('database.connections.couchdb.host');
+        $dbIpAddress = config('database.connections.couchdb.host');
         $dbPort = ':' . config('database.connections.couchdb.port');
 
         return $schema . $dbIpAddress . $dbPort; // $authentication .
+    }
+
+    private function getCouchDBSessionToken() {
+
+
     }
 }

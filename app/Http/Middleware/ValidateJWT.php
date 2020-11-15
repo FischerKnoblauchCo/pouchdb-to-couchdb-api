@@ -26,9 +26,10 @@ class ValidateJWT
 
             // get user JWT token from request cookies, and check if its valid (not malicious, not expired)
             $token = $request->cookie('access_token');
+            $couchDBSession = $request->cookie('session_token');
 
-            // check if token is no sent
-            if (!isset($token) or empty($token)) {
+            // check if tokens are sent
+            if (!isset($token) or empty($token) or !isset($couchDBSession) or empty($couchDBSession)) {
                 return response()->json(ReturnStatuses::UNAUTHORIZED, ReturnStatuses::_401);
             }
 

@@ -46,8 +46,8 @@ class AuthController extends Controller
 
         // check if username and password are valid (in CouchDB) // TODO SEND REQUEST TO COUCHDB TO CHECK USER CREDENTIALS
         // TODO for now fake user validation upon temporary value from user request
-        $cookie = $authService->checkIfCredentialsAreValid($username, $password);
-        if (empty($cookie) or !isset($cookie)) {
+        $couchSession = $authService->checkIfCredentialsAreValid($username, $password);
+        if (empty($couchSession) or !isset($couchSession)) {
             return response()->json(ReturnStatuses::BAD_CREDENTIALS);
         }
 
@@ -56,7 +56,7 @@ class AuthController extends Controller
         $token = $authService->getToken(null);
 
         $response = response()->json(ReturnStatuses::LOGIN_SUCCESSFULL);
-        $response = $authService->setTokenInCookie($response, $token, 'LOGIN');
+        $response = $authService->setTokenInCookie($response, $token, $couchSession, 'LOGIN');
 
         $csrfToken = $authService->getUserCsrfToken($token);
 
@@ -77,9 +77,8 @@ class AuthController extends Controller
         $authService = new AuthService();
 
         // cookie is valid, because request couldnt move through ValidateJWT if it isnt
-        $token = '';
         $response = response()->json(ReturnStatuses::LOGOUT_SUCCESSFULL);
-        $response = $authService->setTokenInCookie($response, $token, 'LOGOUT');
+        $response = $authService->setTokenInCookie($response, '', null, 'LOGOUT');
 
         return $response;
     }
