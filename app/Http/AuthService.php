@@ -6,6 +6,7 @@ namespace App\Http;
 use App\Models\ReturnStatuses;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Cookie;
@@ -46,7 +47,7 @@ class AuthService
         // set CouchDB session token in cookie
         $response->headers->setCookie( // with this cookie user will send every other request, to identify himself
             new Cookie('session_token',
-                $couchSession,
+                Crypt::encrypt($couchSession),
                 $this->getCookieExpiratonTime($cookieType),
                 '/',
                 null, // TODO this is client domain from where request is sent

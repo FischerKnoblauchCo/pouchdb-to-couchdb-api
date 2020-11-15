@@ -21,7 +21,6 @@ class UserController extends Controller
 
     public function __construct()
     {
-        //$this->client = new \GuzzleHttp\Client(['headers' => ['Content-Type' => 'application/json']]);
         $this->authentication = config('app.couchdb-auth');
         $this->userService = new UserService();
     }
@@ -33,7 +32,7 @@ class UserController extends Controller
      */
     public function createUser(Request $request) {
 
-        $sessionToken = $request->cookie('session_token');
+        $sessionToken = Crypt::decrypt($request->cookie('session_token'));
 
         $userCreateData = $request->all(); //['doc'];
         $userCreateData['_id'] = config('app.user_prefix') . $userCreateData['name'];
@@ -49,7 +48,7 @@ class UserController extends Controller
 
     public function editUser(Request $request) {
 
-        $sessionToken = $request->cookie('session_token');
+        $sessionToken = Crypt::decrypt($request->cookie('session_token'));
 
         $userEditData = $request->all(); //['doc'];
 //        array_walk_recursive($userEditData, [$this->userService, 'encryptOrHashUserData']);
@@ -70,7 +69,7 @@ class UserController extends Controller
      */
     public function deleteUser(Request $request, $doc_id) {
 
-        $sessionToken = $request->cookie('session_token');
+        $sessionToken = Crypt::decrypt($request->cookie('session_token'));
 
         //$docId = $request->get('doc_id');
         $revId = $request->get('rev');
@@ -90,7 +89,7 @@ class UserController extends Controller
      */
     public function getUser(Request $request) {
 
-        $sessionToken = $request->cookie('session_token');
+        $sessionToken = Crypt::decrypt($request->cookie('session_token'));
 
         $documentId = $request->get('document_id');
 
@@ -110,7 +109,7 @@ class UserController extends Controller
      */
     public function getUsers(Request $request) { // _all_docs?include_docs=true
 
-        $sessionToken = $request->cookie('session_token');
+        $sessionToken = Crypt::decrypt($request->cookie('session_token'));
 
         $response = $this->userService->getUsers($sessionToken);
 

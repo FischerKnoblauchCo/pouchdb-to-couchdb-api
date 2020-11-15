@@ -16,7 +16,6 @@ class UserService
 
     use DbConnection;
 
-    //private $authentication;
     private $client;
     private $dbUrl;
 
@@ -31,7 +30,6 @@ class UserService
         ]);
         $this->dbUrl = $this->getDatabaseLink();
 
-        //$this->authentication = config('app.couchdb-auth');
     }
 
     public function encryptOrHashUserData(&$value, $key) {
@@ -71,7 +69,8 @@ class UserService
 
     /**
      * @param $userCreateData
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @param $sessionToken
+     * @return array
      */
     public function createUser($userCreateData, $sessionToken) {
 
@@ -137,7 +136,7 @@ class UserService
     /**
      * @param $documentId
      * @param $sessionToken
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @return array
      */
     public function getUser($documentId, $sessionToken) {
 
@@ -171,7 +170,8 @@ class UserService
     }
 
     /**
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @param $sessionToken
+     * @return array
      */
     public function getUsers($sessionToken) {
 
@@ -204,6 +204,12 @@ class UserService
 
     }
 
+    /**
+     * @param $doc_id
+     * @param $revId
+     * @param $sessionToken
+     * @return array
+     */
     public function deleteUser($doc_id, $revId, $sessionToken) {
 
         try {
