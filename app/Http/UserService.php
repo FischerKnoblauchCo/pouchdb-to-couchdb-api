@@ -5,6 +5,8 @@ namespace App\Http;
 
 
 use App\Models\MutationLists;
+use App\Models\ReturnStatuses;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -20,6 +22,7 @@ class UserService
 
     public function __construct()
     {
+
         $this->client = new \GuzzleHttp\Client([
             'headers' => [
                 'Content-Type' => 'application/json',
@@ -67,77 +70,164 @@ class UserService
     }
 
     /**
-     * @param $currentUser
      * @param $userCreateData
-     * @param $dbClient
-     * @return \Psr\Http\Message\ResponseInterface
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function createUser($currentUser, $userCreateData, $dbClient) {
+    public function createUser($userCreateData, $sessionToken) {
 
-        $response = $this->client->request('POST', $this->dbUrl . '/' . config('app.users_table'), [
-            'body' => json_encode($userCreateData)
-        ]);
+        try {
 
-        return $response;
+            array_walk_recursive($userCreateData, [$this, 'encryptOrHashUserData']);
+
+            $response = $this->client->request('POST', $this->dbUrl . '/' . config('app.users_table'), [
+                'body' => json_encode($userCreateData),
+                'headers' => [
+                    'Cookie' => $sessionToken
+                ]
+            ]);
+
+            return [
+                'data' => json_decode($response->getBody()->getContents()),
+                'status' => 200
+            ];
+
+        } catch (GuzzleException $e) {
+
+            return [
+                'data' => [],
+                'status' => $e->getCode(),
+                'message' => $e->getMessage()
+            ];
+        }
+
     }
 
-    public function editUser($currentUser, $userEditData, $dbClient) {
+    public function editUser($userEditData, $sessionToken) {
 
-        $id = $userEditData['_id'];
-        unset($userEditData['_id']);
+        try {
 
-        $response = $this->client->request('PUT', $this->dbUrl . '/' . config('app.users_table') .'/' . $id, [
-            'body' => json_encode($userEditData)
-        ]);
+            $id = $userEditData['_id'];
+            unset($userEditData['_id']);
 
-        return $response;
+            array_walk_recursive($userEditData, [$this, 'encryptOrHashUserData']);
+
+            $response = $this->client->request('PUT', $this->dbUrl . '/' . config('app.users_table') .'/' . $id, [
+                'body' => json_encode($userEditData),
+                'headers' => [
+                    'Cookie' => $sessionToken
+                ]
+            ]);
+
+            return [
+                'data' => json_decode($response->getBody()->getContents()),
+                'status' => 200
+            ];
+
+        } catch (GuzzleException $e) {
+
+            return [
+                'data' => [],
+                'status' => $e->getCode(),
+                'message' => $e->getMessage()
+            ];
+        }
+
     }
 
     /**
      * @param $documentId
-     * @return \Psr\Http\Message\ResponseInterface
+     * @param $sessionToken
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getUser($documentId) {
+    public function getUser($documentId, $sessionToken) {
 
-        $response = $this->client->request('GET', $this->dbUrl . '/' . config('app.users_table') . '/' . $documentId);
+        try {
 
-        return $response;
+            $response = $this->client->request('GET', $this->dbUrl . '/' . config('app.users_table') . '/' . $documentId, [
+                'headers' => [
+                    'Cookie' => $sessionToken
+                ]
+            ]);
+
+            $dataToHandle = json_decode($response->getBody()->getContents());
+
+            $dataToHandle = $this->decryptUsersData($dataToHandle);
+
+            return [
+                'data' => $dataToHandle,
+                'status' => 200
+            ];
+
+        } catch (GuzzleException $e) {
+
+            return [
+                'data' => [],
+                'status' => $e->getCode(),
+                'message' => $e->getMessage()
+            ];
+        }
+
+
     }
 
     /**
-     * @return \Psr\Http\Message\ResponseInterface
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getUsers($sessionToken) {
 
-        $response = $this->client->request('GET', $this->dbUrl . '/' . config('app.users_table') . '/_all_docs?include_docs=true', [
-            'headers' => [
-                'Cookie' => $sessionToken
-            ]
-        ]);
+        try {
 
-       // die(print_r($response->getHeaders()));
+            $response = $this->client->request('GET', $this->dbUrl . '/' . config('app.users_table') . '/_all_docs?include_docs=true', [
+                'headers' => [
+                    'Cookie' => $sessionToken
+                ]
+            ]);
 
-        return $response;
+            $dataToHandle = json_decode($response->getBody()->getContents());
+            $dataToHandle = $this->decryptUsersData($dataToHandle->rows);
+            $dataToHandle['rows'] = $dataToHandle;
+
+            return [
+                'data' => $dataToHandle,
+                'status' => 200
+            ];
+
+        } catch (GuzzleException $e) {
+
+            return [
+                'data' => [],
+                'status' => $e->getCode(),
+                'message' => $e->getMessage()
+            ];
+
+        }
+
     }
 
-    public function deleteUser($doc_id, $revId) {
+    public function deleteUser($doc_id, $revId, $sessionToken) {
 
-        $response = $this->client->request('DELETE', $this->dbUrl . '/' . config('app.users_table') . '/' . $doc_id . '?rev=' . $revId);
+        try {
 
-        return $response;
+            $response = $this->client->request('DELETE', $this->dbUrl . '/' . config('app.users_table') . '/' . $doc_id . '?rev=' . $revId, [
+                'headers' => [
+                    'Cookie' => $sessionToken
+                ]
+            ]);
+
+            return [
+                'data' => json_decode($response->getBody()->getContents()),
+                'status' => 200
+            ];
+
+        } catch (GuzzleException $e) {
+
+            return [
+                'data' => [],
+                'status' => $e->getCode(),
+                'message' => $e->getMessage()
+            ];
+        }
+
     }
-
-//    private function getDatabaseLink() {
-//
-//        $schema = config('app.url_schema') . '://';
-//        //$authentication = config('app.couchdb-auth');
-//        $dbIpAddress = config('database.connections.couchdb.host');
-//        $dbPort = ':' . config('database.connections.couchdb.port');
-//
-//        return $schema . $dbIpAddress . $dbPort; //  $authentication .
-//    }
 
 }

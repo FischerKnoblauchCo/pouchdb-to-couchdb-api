@@ -33,33 +33,32 @@ class UserController extends Controller
      */
     public function createUser(Request $request) {
 
+        $sessionToken = $request->cookie('session_token');
+
         $userCreateData = $request->all(); //['doc'];
         $userCreateData['_id'] = config('app.user_prefix') . $userCreateData['name'];
-        //unset($userCreateData['first_name']);
         unset($userCreateData['passwordrepeat']); // TODO check if confirmation password is right
 
-        array_walk_recursive($userCreateData, [$this->userService, 'encryptOrHashUserData']);
-
-        $response = $this->userService->createUser(null, $userCreateData, null);
+        $response = $this->userService->createUser($userCreateData, $sessionToken);
 
         return response()->json([
-            'data' => $response
-        ], ReturnStatuses::_200);
+            $response['data']
+        ], $response['status']);
 
     }
 
     public function editUser(Request $request) {
 
+        $sessionToken = $request->cookie('session_token');
+
         $userEditData = $request->all(); //['doc'];
-        //unset($userCreateData['first_name']);
+//        array_walk_recursive($userEditData, [$this->userService, 'encryptOrHashUserData']);
 
-        array_walk_recursive($userEditData, [$this->userService, 'encryptOrHashUserData']);
-
-        $response = $this->userService->editUser(null, $userEditData, null);
+        $response = $this->userService->editUser($userEditData, $sessionToken);
 
         return response()->json([
-            'data' => $response
-        ], ReturnStatuses::_200);
+            $response['data']
+        ], $response['status']);
 
     }
 
@@ -71,15 +70,17 @@ class UserController extends Controller
      */
     public function deleteUser(Request $request, $doc_id) {
 
+        $sessionToken = $request->cookie('session_token');
+
         //$docId = $request->get('doc_id');
         $revId = $request->get('rev');
 
         // TODO delete user by its id and rev
-        $response = $this->userService->deleteUser($doc_id, $revId);
+        $response = $this->userService->deleteUser($doc_id, $revId, $sessionToken);
 
         return response()->json([
-            $response
-        ], ReturnStatuses::_200);
+            $response['data']
+        ], $response['status']);
     }
 
     /**
@@ -89,17 +90,19 @@ class UserController extends Controller
      */
     public function getUser(Request $request) {
 
+        $sessionToken = $request->cookie('session_token');
+
         $documentId = $request->get('document_id');
 
-        $response = $this->userService->getUser($documentId);
+        $response = $this->userService->getUser($documentId, $sessionToken);
 
-        $dataToHandle = json_decode($response->getBody()->getContents());
-
-        array_walk_recursive($dataToHandle, [$this->userService, 'decryptUserData']);
+//        $dataToHandle = json_decode($response->getBody()->getContents());
+//
+//        array_walk_recursive($dataToHandle, [$this->userService, 'decryptUserData']);
 
         return response()->json([
-            $dataToHandle
-        ], ReturnStatuses::_200);
+            $response['data']
+        ], $response['status']);
     }
 
     /**
@@ -111,15 +114,9 @@ class UserController extends Controller
 
         $response = $this->userService->getUsers($sessionToken);
 
-        $responseData = json_decode($response->getBody()->getContents());
-
-        $dataToHandle = $this->userService->decryptUsersData($responseData->rows);
-
-        $responseData->rows = $dataToHandle;
-
         return response()->json([
-            $responseData
-        ], ReturnStatuses::_200);
+            $response['data']
+        ], $response['status']);
 
     }
 }
